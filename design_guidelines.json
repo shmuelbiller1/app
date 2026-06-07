@@ -1,0 +1,128 @@
+{
+  "theme": "Light",
+  "archetype": "Archetype 4 (Swiss & High-Contrast)",
+  "typography": {
+    "fonts": {
+      "heading": "Chivo",
+      "body": "IBM Plex Mono",
+      "data": "IBM Plex Mono"
+    },
+    "hierarchy": {
+      "h1": "text-5xl sm:text-6xl font-black tracking-tighter leading-none text-black",
+      "h2": "text-3xl sm:text-4xl font-bold tracking-tight leading-none text-black",
+      "h3": "text-xl sm:text-2xl font-bold tracking-tight text-black",
+      "h4": "text-lg sm:text-xl font-bold tracking-tight text-black",
+      "body": "text-base font-normal leading-relaxed text-black/80",
+      "small": "text-sm font-medium tracking-wide uppercase text-black/60"
+    },
+    "guidelines": [
+      "Headings MUST use tight letter spacing: tracking-tight or tracking-tighter.",
+      "Overlines / Labels MUST be Uppercase + Tiny + Wide Spacing (tracking-[0.2em]).",
+      "Body and Data numbers use monospaced font for vertical alignment.",
+      "No Inter, Roboto, Open Sans, Lato, or Syne."
+    ]
+  },
+  "colors": {
+    "background": {
+      "primary": "#FFFFFF",
+      "secondary": "#F9FAFB",
+      "tertiary": "#F3F4F6",
+      "inverted": "#0A0A0A"
+    },
+    "text": {
+      "primary": "#0A0A0A",
+      "secondary": "#4B5563",
+      "muted": "#9CA3AF",
+      "inverted": "#FFFFFF"
+    },
+    "border": {
+      "default": "#0A0A0A",
+      "subtle": "#E5E7EB"
+    },
+    "accents": {
+      "primary": "#002FA7",
+      "danger": "#FF3B30",
+      "warning": "#FFCC00",
+      "success": "#34C759"
+    },
+    "guidelines": [
+      "Color is Function Only. 95% of the UI should be monochrome.",
+      "Use Signal Red (#FF3B30) for removed tokens or destructive actions.",
+      "Use International Klein Blue (#002FA7) for primary CTAs and kept tokens.",
+      "Use pure Jet Black (#0A0A0A) for strong brutalist borders and text.",
+      "Use #FFFFFF for background to ensure stark contrast."
+    ]
+  },
+  "spacing_and_layout": {
+    "system": "Tailwind Scale: p-1, p-2, p-4, p-6, p-8, p-12, p-16, p-20, p-24, p-32",
+    "grids": {
+      "marketing": "Asymmetric bento grid. grid-cols-1 md:grid-cols-12 gap-8.",
+      "dashboard": "Strict grid hierarchy, dense and compact spacing. grid-cols-1 md:grid-cols-4 gap-4."
+    },
+    "components": {
+      "cards": "Brutalist. Flat background, 1px or 2px solid black border, hard black shadow (shadow-[4px_4px_0px_#0A0A0A]). No blur.",
+      "buttons": "Square or very slightly rounded (rounded-sm). High contrast background (Black or Blue), white text. Hard shadow on hover."
+    },
+    "guidelines": [
+      "Containers with borders MUST have internal padding (p-6 or p-8).",
+      "Generous Spacing Philosophy for marketing pages.",
+      "Grid Layouts MUST only have direct children.",
+      "Override default stretch behavior on grid with align-items: start where necessary."
+    ]
+  },
+  "motion_and_interactions": {
+    "hover_states": "Buttons and cards translate-y-[-2px] with increased shadow offset. ALWAYS explicitly set text color on hover.",
+    "focus_states": "High contrast ring. focus:ring-2 focus:ring-black focus:ring-offset-2.",
+    "transitions": "transition-all duration-200 ease-in-out.",
+    "guidelines": [
+      "MUST respect prefers-reduced-motion.",
+      "Animations are minimal, focused on micro-interactions for feedback.",
+      "Loading states use stark, monospaced ASCII or progress bar animations."
+    ]
+  },
+  "visual_enhancers": {
+    "surfaces": "Grid Borders (The Technical Look) - Expose the skeleton. Container: border-collapse style layout. Items: border-r border-b border-black. Retro-Futurism touches for the code/terminal feel.",
+    "icons": "Phosphor Icons (dense dashboards, technical feel) or Lucide-react.",
+    "guidelines": [
+      "No full-screen gradients. Texture > gloss.",
+      "Data visualization (Recharts) should use high-contrast solid colors (Blue vs Red) with no gradients or soft shadows.",
+      "Header must have a solid background (bg-white) with a 1px solid black bottom border."
+    ]
+  },
+  "accessibility": {
+    "contrast": "Minimum 4.5:1 contrast ratio for normal text. Minimum 3:1 for large text.",
+    "testing_attributes": "All interactive and key informational elements MUST include a data-testid attribute in kebab-case."
+  },
+  "image_urls": [
+    {
+      "category": "hero_background",
+      "url": "https://images.unsplash.com/photo-1644088379091-d574269d422f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGRhdGElMjB2aXN1YWxpemF0aW9uJTIwbm9kZXxlbnwwfHx8fDE3ODA4NjMwMzl8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Abstract data nodes, used as a subtle background or graphic in the hero section to represent token processing."
+    },
+    {
+      "category": "developer_context",
+      "url": "https://images.unsplash.com/photo-1484417894907-623942c8ee29?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA4Mzl8MHwxfHNlYXJjaHwyfHxkZXZlbG9wZXIlMjB3b3Jrc3BhY2UlMjBkZXNrfGVufDB8fHx8MTc4MDg2MzAzOXww&ixlib=rb-4.1.0&q=85",
+      "description": "MacBook showing code, useful for the landing page feature section."
+    },
+    {
+      "category": "sponsor_logo_1",
+      "url": "https://images.pexels.com/photos/15863044/pexels-photo-15863044.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "OpenAI logo representation, used in the 'Supported By' or 'Integrates With' section."
+    }
+  ],
+  "media_guidelines": [
+    "Images should be used minimally. When used, treat them with a high-contrast black/white filter or overlay to fit the brutalist theme.",
+    "Hero Image Overlay (CRITICAL): Max overlay opacity: bg-black/50, or use a gradient overlay."
+  ],
+  "component_path": "/app/frontend/src/components/ui/",
+  "instructions_to_main_agent": [
+    "Use Chivo for headings and IBM Plex Mono for body/data.",
+    "Enforce Swiss High-Contrast Brutalist style: Stark white backgrounds, solid black borders, hard drop shadows (shadow-[4px_4px_0px_#0A0A0A]).",
+    "Landing Page: Build a high-impact hero explaining token deduplication with an asymmetric bento grid layout. Use the developer context image and data node image.",
+    "Dashboard: Create a dense, F-pattern layout. Top left KPI. Use Recharts for token savings visualization (Blue for saved, Red for removed).",
+    "Admin Panel & API Keys: Clean, table-heavy interfaces using Shadcn. Strip away soft styling to match the brutalist aesthetic.",
+    "Ensure all interactive elements have data-testid attributes.",
+    "Install and use Phosphor icons: yarn add @phosphor-icons/react",
+    "Use only .js extension for files, avoiding TypeScript strictly."
+  ]
+}
