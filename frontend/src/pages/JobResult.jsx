@@ -112,11 +112,11 @@ export default function JobResult() {
         <div className="card-brutal p-6 lg:col-span-2">
           <div className="overline mb-4">Token volume · before vs after</div>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+            <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <XAxis dataKey="name" tick={{ fontFamily: "IBM Plex Mono", fontSize: 12, fill: "#0A0A0A" }} axisLine={{ stroke: "#0A0A0A" }} />
               <YAxis tick={{ fontFamily: "IBM Plex Mono", fontSize: 11, fill: "#9CA3AF" }} axisLine={{ stroke: "#0A0A0A" }} width={50} />
               <Tooltip cursor={{ fill: "#F3F4F6" }} contentStyle={{ border: "2px solid #0A0A0A", borderRadius: 2, fontFamily: "IBM Plex Mono" }} />
-              <Bar dataKey="value" stroke="#0A0A0A" strokeWidth={2}>
+              <Bar dataKey="value" fill="#002FA7" stroke="#0A0A0A" strokeWidth={2} maxBarSize={140} isAnimationActive={false}>
                 <Cell fill="#FF3B30" />
                 <Cell fill="#002FA7" />
               </Bar>
