@@ -1,0 +1,29 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { Bell, RefreshCw, TrendingDown, Zap, ShieldAlert, Clock3, Database, Settings2 } from "lucide-react";
+
+const demo = {
+  generated_at: "Demo data — run scanner workflow to refresh",
+  market_status: "READY",
+  scanner_a: [
+    {ticker:"YANG",score:94.2,probability:.68,z_score:2.7,high_distance:.7,liquidity:"HIGH",options:true},
+    {ticker:"FAS",score:89.6,probability:.64,z_score:2.3,high_distance:1.2,liquidity:"HIGH",options:true},
+    {ticker:"NUGT",score:84.8,probability:.61,z_score:2.0,high_distance:1.8,liquidity:"MED",options:true}
+  ],
+  scanner_b: [
+    {ticker:"DEF",score:92.1,short_float:21.8,days_to_cover:6.2,rel_volume:3.7,price_change:9.2,options:true},
+    {ticker:"LMN",score:88.7,short_float:18.4,days_to_cover:5.1,rel_volume:4.2,price_change:7.4,options:true},
+    {ticker:"TUV",score:83.9,short_float:16.9,days_to_cover:4.7,rel_volume:3.1,price_change:6.1,options:false}
+  ]
+};
+function Score({value}) { return <div className="qs-score"><div className="qs-score-track"><span style={{width:`${Math.min(value,100)}%`}}/></div><b>{value.toFixed(1)}</b></div> }
+export default function QuantScanner(){
+ const [data,setData]=useState(demo),[tab,setTab]=useState("A"),[loading,setLoading]=useState(false),[alerts,setAlerts]=useState(true);
+ const load=async()=>{setLoading(true);try{const r=await fetch(`${process.env.PUBLIC_URL||""}/scanner-data.json?${Date.now()}`);if(r.ok)setData(await r.json())}catch(e){}setLoading(false)};
+ useEffect(()=>{load()},[]);
+ const all=[...(data.scanner_a||[]),...(data.scanner_b||[])], high=useMemo(()=>all.filter(x=>x.score>=90).length,[data]),top=Math.max(...all.map(x=>x.score),0);
+ return <div className="quant-scanner"><header className="qs-header"><div className="qs-brand"><div className="qs-mark">QS</div><div><strong>QUANT SCANNER</strong><span>OPPORTUNITY RANKING ENGINE</span></div></div><div className="qs-actions"><span className="qs-live"><i/> {data.market_status||"READY"}</span><button onClick={load}><RefreshCw size={15} className={loading?"spin":""}/> Refresh</button><button className={alerts?"active":""} onClick={()=>setAlerts(!alerts)}><Bell size={15}/> Alerts</button></div></header>
+ <main className="qs-main"><section className="qs-hero"><div><div className="qs-eyebrow">SYSTEMATIC MARKET RESEARCH</div><h1>Find the <em>extreme.</em><br/>Measure the setup.</h1><p>Two independent scanners rank statistically unusual leveraged-fund reversals and short-squeeze conditions. No “looks high” signals — every candidate gets a measurable score and historical context.</p></div><div className="qs-status-card"><div><span>ENGINE STATUS</span><b>ONLINE</b></div><div><span>CANDIDATES</span><b>{all.length}</b></div><div><span>HIGH CONVICTION</span><b>{high}</b></div></div></section>
+ <section className="qs-metrics"><div><small>SCANNER A</small><strong>{data.scanner_a.length}</strong><span>leveraged reversal</span></div><div><small>SCANNER B</small><strong>{data.scanner_b.length}</strong><span>squeeze setups</span></div><div><small>TOP SCORE</small><strong>{top.toFixed(1)}</strong><span>composite score</span></div><div><small>LAST RUN</small><strong>AUTO</strong><span>{data.generated_at}</span></div></section>
+ <section className="qs-panel"><div className="qs-tabs"><button className={tab==="A"?"selected":""} onClick={()=>setTab("A")}><TrendingDown size={16}/> A / LEVERAGED REVERSAL</button><button className={tab==="B"?"selected":""} onClick={()=>setTab("B")}><Zap size={16}/> B / SHORT SQUEEZE</button></div><div className="qs-table-wrap">{tab==="A"?<table><thead><tr><th>RANK</th><th>SYMBOL</th><th>SCORE</th><th>DOWNSIDE PROB.</th><th>Z-SCORE</th><th>52W DIST.</th><th>LIQUIDITY</th><th>OPTIONS</th></tr></thead><tbody>{data.scanner_a.map((x,i)=><tr key={x.ticker}><td className="rank">0{i+1}</td><td><strong>{x.ticker}</strong><small>LEVERAGED / INVERSE</small></td><td><Score value={x.score}/></td><td className="prob">{(x.probability*100).toFixed(1)}%</td><td>{x.z_score?.toFixed(2)}σ</td><td>{x.high_distance?.toFixed(1)}%</td><td><span className="pill">{x.liquidity}</span></td><td><span className={x.options?"yes":"no"}>{x.options?"✓ ELIGIBLE":"—"}</span></td></tr>)}</tbody></table>:<table><thead><tr><th>RANK</th><th>SYMBOL</th><th>SCORE</th><th>SHORT FLOAT</th><th>DAYS TO COVER</th><th>REL. VOLUME</th><th>PRICE Δ</th><th>OPTIONS</th></tr></thead><tbody>{data.scanner_b.map((x,i)=><tr key={x.ticker}><td className="rank">0{i+1}</td><td><strong>{x.ticker}</strong><small>SHORT-SQUEEZE SETUP</small></td><td><Score value={x.score}/></td><td className="prob">{x.short_float?.toFixed(1)}%</td><td>{x.days_to_cover?.toFixed(1)}</td><td>{x.rel_volume?.toFixed(1)}×</td><td className="positive">+{x.price_change?.toFixed(1)}%</td><td><span className={x.options?"yes":"no"}>{x.options?"✓ ELIGIBLE":"—"}</span></td></tr>)}</tbody></table>}</div></section>
+ <section className="qs-grid"><div className="qs-info"><div className="qs-info-title"><ShieldAlert size={17}/> HOW TO READ THE ENGINE</div><p><b>Score ≠ prediction.</b> A high score means the current feature state resembles historically unusual conditions. Downside probability is conditional historical frequency and must be validated out-of-sample.</p><div className="qs-tags"><span>NO TECH</span><span>NO BIOTECH</span><span>FINALIST-FIRST</span><span>BACKTESTED</span></div></div><div className="qs-info"><div className="qs-info-title"><Database size={17}/> DATA PIPELINE</div><div className="pipeline"><span>FINNHUB</span><b>→</b><span>FINRA</span><b>→</b><span>SCORING</span><b>→</b><span>OPTIONS</span><b>→</b><span>ALERT</span></div><p className="muted">Options data is queried only after primary filters to conserve API quota.</p></div></section><footer><span><Clock3 size={13}/> {data.generated_at}</span><span><Settings2 size={13}/> Research mode · no auto-trading</span></footer></main></div>
+}
