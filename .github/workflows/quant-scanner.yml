@@ -1,0 +1,70 @@
+name: Quant Market Scanner
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekdays after the US close. GitHub schedules use UTC.
+    - cron: "45 21 * * 1-5"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: quant-scanner
+  cancel-in-progress: true
+
+jobs:
+  scan-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install scanner dependencies
+        run: pip install -r requirements-scanner.txt
+
+      - name: Run scanners
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python scanner.py
+
+      - name: Commit fresh scan data
+        run: |
+          git config user.name "quant-scanner[bot]"
+          git config user.email "quant-scanner[bot]@users.noreply.github.com"
+          git add frontend/public/scanner-data.json
+          git diff --cached --quiet || git commit -m "chore: refresh scanner results"
+          git push
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Build dashboard
+        working-directory: frontend
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/build
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
