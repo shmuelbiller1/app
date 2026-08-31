@@ -3,8 +3,8 @@ name: Quant Market Scanner
 on:
   workflow_dispatch:
   schedule:
-    # Weekdays after the US close. GitHub schedules use UTC.
-    - cron: "45 21 * * 1-5"
+    # Run every 30 minutes during regular US market hours (UTC).
+    - cron: "*/30 14-20 * * 1-5"
 
 permissions:
   contents: write
@@ -28,13 +28,14 @@ jobs:
           python-version: "3.12"
 
       - name: Install scanner dependencies
-        run: pip install -r requirements-scanner.txt
+        run: pip install -r scanner/requirements.txt
 
-      - name: Run scanners
+      - name: Run LIVE scanners
         env:
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          FINRA_SHORT_CSV: data/finra_short_interest.csv
         run: python scanner.py
 
       - name: Commit fresh scan data
@@ -42,7 +43,7 @@ jobs:
           git config user.name "quant-scanner[bot]"
           git config user.email "quant-scanner[bot]@users.noreply.github.com"
           git add frontend/public/scanner-data.json
-          git diff --cached --quiet || git commit -m "chore: refresh scanner results"
+          git diff --cached --quiet || git commit -m "chore: refresh live scanner results"
           git push
 
       - name: Node
