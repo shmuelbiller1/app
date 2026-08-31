@@ -10,53 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import JobResult from "@/pages/JobResult";
 import ApiKeys from "@/pages/ApiKeys";
 import Admin from "@/pages/Admin";
-
-function Loading() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="font-mono text-sm uppercase tracking-[0.3em] text-[#9CA3AF] animate-pulse">
-        Loading…
-      </div>
-    </div>
-  );
-}
-
-function Protected({ children, adminOnly }) {
-  const { user } = useAuth();
-  if (user === null) return <Loading />;
-  if (!user) return <Navigate to="/login" replace />;
-  if (adminOnly && user.role !== "admin") return <Navigate to="/app" replace />;
-  return <AppShell>{children}</AppShell>;
-}
-
-function App() {
-  return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              border: "2px solid #0A0A0A",
-              borderRadius: 2,
-              fontFamily: "IBM Plex Mono",
-              boxShadow: "4px 4px 0px #0A0A0A",
-            },
-          }}
-        />
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/app" element={<Protected><Dashboard /></Protected>} />
-          <Route path="/app/keys" element={<Protected><ApiKeys /></Protected>} />
-          <Route path="/app/jobs/:jobId" element={<Protected><JobResult /></Protected>} />
-          <Route path="/admin" element={<Protected adminOnly><Admin /></Protected>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
-  );
-}
-
-export default App;
+import QuantScanner from "@/pages/QuantScanner";
+function Loading(){return <div className="min-h-screen flex items-center justify-center bg-white"><div className="font-mono text-sm uppercase tracking-[0.3em] text-[#9CA3AF] animate-pulse">Loading…</div></div>}
+function Protected({children,adminOnly}){const {user}=useAuth();if(user===null)return <Loading/>;if(!user)return <Navigate to="/login" replace/>;if(adminOnly&&user.role!=="admin")return <Navigate to="/app" replace/>;return <AppShell>{children}</AppShell>}
+export default function App(){return <AuthProvider><BrowserRouter><Toaster position="top-right"/><Routes><Route path="/" element={<Landing/>}/><Route path="/scanner" element={<QuantScanner/>}/><Route path="/login" element={<Login/>}/><Route path="/register" element={<Register/>}/><Route path="/app" element={<Protected><Dashboard/></Protected>}/><Route path="/app/keys" element={<Protected><ApiKeys/></Protected>}/><Route path="/app/jobs/:jobId" element={<Protected><JobResult/></Protected>}/><Route path="/admin" element={<Protected adminOnly><Admin/></Protected>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes></BrowserRouter></AuthProvider>}
