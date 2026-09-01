@@ -3,8 +3,8 @@ name: Quant Market Scanner
 on:
   workflow_dispatch:
   schedule:
-    # GitHub cron is UTC. Cover both EST and EDT with a wider window;
-    # the Python scanner itself enforces 09:30–16:00 America/New_York.
+    # Broad UTC envelope; session_gate.py applies the actual 09:30–16:00
+    # America/New_York regular-session boundary and handles DST correctly.
     - cron: "*/30 13-21 * * 1-5"
 
 permissions:
@@ -31,7 +31,12 @@ jobs:
       - name: Install scanner dependencies
         run: pip install -r scanner/requirements.txt
 
+      - name: Check U.S. regular market session
+        id: session
+        run: python scanner/session_gate.py
+
       - name: Optional FINRA enrichment
+        if: steps.session.outputs.in_session == 'true'
         env:
           FINRA_CLIENT_ID: ${{ secrets.FINRA_CLIENT_ID }}
           FINRA_CLIENT_SECRET: ${{ secrets.FINRA_CLIENT_SECRET }}
@@ -43,19 +48,31 @@ jobs:
           fi
 
       - name: Run LIVE zero-key-first scanner
+        if: steps.session.outputs.in_session == 'true'
         env:
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # Discord is intentionally handled by smart_alerts.py, so the
+          # legacy scanner does not emit duplicate alerts.
           FINRA_SHORT_CSV: data/finra_short_interest.csv
           ALERT_MIN_SCORE: "85"
         run: python scanner/run_scanner.py
 
+      - name: Send stateful smart alerts
+        if: steps.session.outputs.in_session == 'true'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ALERT_MIN_SCORE: "85"
+          ALERT_SCORE_CHANGE: "5"
+          ALERT_COOLDOWN_SECONDS: "14400"
+        run: python scanner/smart_alerts.py
+
       - name: Commit fresh scan data and research inputs
+        if: steps.session.outputs.in_session == 'true'
         run: |
           git config user.name "quant-scanner[bot]"
           git config user.email "quant-scanner[bot]@users.noreply.github.com"
-          git add frontend/public/scanner-data.json frontend/public/signal-lab.json data/finra_short_interest.csv data/finra_reg_sho_daily.csv data/signal_lab.sqlite3
+          git add frontend/public/scanner-data.json frontend/public/signal-lab.json data/finra_short_interest.csv data/finra_reg_sho_daily.csv data/signal_lab.sqlite3 data/alert_state.json
           git diff --cached --quiet || git commit -m "chore: refresh live scanner data"
           git push
 
