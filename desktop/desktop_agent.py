@@ -94,14 +94,10 @@ def notify(title: str, message: str) -> None:
 
 
 def run_scanner() -> dict | None:
-    scanner = ROOT / "scanner" / "hardened_runner.py"
-    if not scanner.exists():
-        log(f"missing scanner: {scanner}")
-        return None
     env = os.environ.copy()
     env.pop("DISCORD_WEBHOOK_URL", None)
     result = subprocess.run(
-        [sys.executable, str(scanner)], cwd=str(ROOT), env=env,
+        [sys.executable, "-m", "scanner.hardened_runner"], cwd=str(ROOT), env=env,
         capture_output=True, text=True, timeout=15 * 60,
     )
     if result.returncode != 0:
