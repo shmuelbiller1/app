@@ -16,6 +16,14 @@ concurrency:
   group: quant-scanner
   cancel-in-progress: true
 
+env:
+  # Primary alert configuration. Secrets are injected only at runtime.
+  ALERT_MIN_SCORE: "85"
+  ALERT_SCORE_CHANGE: "5"
+  ALERT_COOLDOWN_SECONDS: "14400"
+  ALERT_HIGH_PRIORITY_SCORE: "95"
+  ALERT_DASHBOARD_URL: ${{ vars.ALERT_DASHBOARD_URL }}
+
 jobs:
   scan-and-build:
     runs-on: ubuntu-latest
@@ -54,19 +62,22 @@ jobs:
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
           FINRA_SHORT_CSV: data/finra_short_interest.csv
           FINRA_REG_SHO_CSV: data/finra_reg_sho_daily.csv
-          # Scanner A has a curated non-tech/non-biotech ETF universe; when
-          # Finnhub classification is unavailable it may use that local class.
           ALLOW_UNKNOWN_INDUSTRY: "1"
-          ALERT_MIN_SCORE: "85"
         run: python scanner/run_scanner.py
 
-      - name: Send optional stateful Discord alerts
-        if: steps.session.outputs.in_session == 'true' && secrets.DISCORD_WEBHOOK_URL != ''
+      - name: Send stateful Pushover + email alerts
+        if: steps.session.outputs.in_session == 'true'
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          ALERT_MIN_SCORE: "85"
-          ALERT_SCORE_CHANGE: "5"
-          ALERT_COOLDOWN_SECONDS: "14400"
+          PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_APP_TOKEN }}
+          PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_USE_TLS: ${{ secrets.SMTP_USE_TLS }}
+          SMTP_USE_SSL: ${{ secrets.SMTP_USE_SSL }}
+          ALERT_EMAIL_FROM: ${{ secrets.ALERT_EMAIL_FROM }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
         run: python scanner/smart_alerts.py
 
       - name: Commit fresh scan data and research inputs
