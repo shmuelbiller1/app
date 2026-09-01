@@ -29,25 +29,30 @@ jobs:
       - name: Install scanner dependencies
         run: pip install -r scanner/requirements.txt
 
-      - name: Refresh FINRA short-interest and Reg SHO data
+      - name: Optional FINRA enrichment
         env:
           FINRA_CLIENT_ID: ${{ secrets.FINRA_CLIENT_ID }}
           FINRA_CLIENT_SECRET: ${{ secrets.FINRA_CLIENT_SECRET }}
-        run: python -c "from scanner.finra_client import run_finra_ingest; print(run_finra_ingest())"
+        run: |
+          if [ -n "$FINRA_CLIENT_ID" ] && [ -n "$FINRA_CLIENT_SECRET" ]; then
+            python -c "from scanner.finra_client import run_finra_ingest; print(run_finra_ingest())"
+          else
+            echo "FINRA credentials not configured — continuing in ZERO-KEY MODE"
+          fi
 
-      - name: Run LIVE scanners
+      - name: Run LIVE zero-key-first scanner
         env:
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           FINRA_SHORT_CSV: data/finra_short_interest.csv
-        run: python scanner.py
+        run: python scanner/run_scanner.py
 
       - name: Commit fresh scan data and research inputs
         run: |
           git config user.name "quant-scanner[bot]"
           git config user.email "quant-scanner[bot]@users.noreply.github.com"
-          git add frontend/public/scanner-data.json data/finra_short_interest.csv data/finra_reg_sho_daily.csv
+          git add frontend/public/scanner-data.json frontend/public/signal-lab.json data/finra_short_interest.csv data/finra_reg_sho_daily.csv data/signal_lab.sqlite3
           git diff --cached --quiet || git commit -m "chore: refresh live scanner data"
           git push
 
