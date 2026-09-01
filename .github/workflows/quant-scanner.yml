@@ -52,14 +52,16 @@ jobs:
         env:
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
-          # Discord is intentionally handled by smart_alerts.py, so the
-          # legacy scanner does not emit duplicate alerts.
           FINRA_SHORT_CSV: data/finra_short_interest.csv
+          FINRA_REG_SHO_CSV: data/finra_reg_sho_daily.csv
+          # Scanner A has a curated non-tech/non-biotech ETF universe; when
+          # Finnhub classification is unavailable it may use that local class.
+          ALLOW_UNKNOWN_INDUSTRY: "1"
           ALERT_MIN_SCORE: "85"
         run: python scanner/run_scanner.py
 
-      - name: Send stateful smart alerts
-        if: steps.session.outputs.in_session == 'true'
+      - name: Send optional stateful Discord alerts
+        if: steps.session.outputs.in_session == 'true' && secrets.DISCORD_WEBHOOK_URL != ''
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           ALERT_MIN_SCORE: "85"
