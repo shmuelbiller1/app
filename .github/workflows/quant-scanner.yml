@@ -56,12 +56,10 @@ jobs:
       - name: Run LIVE zero-key-first scanner
         if: steps.session.outputs.in_session == 'true'
         env:
-          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
-          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
           FINRA_SHORT_CSV: data/finra_short_interest.csv
           FINRA_REG_SHO_CSV: data/finra_reg_sho_daily.csv
           ALLOW_UNKNOWN_INDUSTRY: "1"
-        run: python scanner/run_scanner.py
+        run: python scanner/hardened_runner.py
 
       - name: Send stateful email alerts
         if: steps.session.outputs.in_session == 'true'
