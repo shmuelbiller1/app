@@ -37,6 +37,10 @@ jobs:
       - name: Install scanner dependencies
         run: pip install -r scanner/requirements.txt
 
+      - name: Verify scanner package imports
+        run: |
+          python -c "import scanner; import scanner.run_scanner; import scanner.research_stats; import scanner.signal_lab; import scanner.finra_client; print('scanner package imports OK')"
+
       - name: Check U.S. regular market session
         id: session
         run: python scanner/session_gate.py
