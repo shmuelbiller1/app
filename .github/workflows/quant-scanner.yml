@@ -3,7 +3,9 @@ name: Quant Market Scanner
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 14-20 * * 1-5"
+    # GitHub cron is UTC. Cover both EST and EDT with a wider window;
+    # the Python scanner itself enforces 09:30–16:00 America/New_York.
+    - cron: "*/30 13-21 * * 1-5"
 
 permissions:
   contents: write
@@ -46,6 +48,7 @@ jobs:
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           FINRA_SHORT_CSV: data/finra_short_interest.csv
+          ALERT_MIN_SCORE: "85"
         run: python scanner/run_scanner.py
 
       - name: Commit fresh scan data and research inputs
