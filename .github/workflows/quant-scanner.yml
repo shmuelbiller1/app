@@ -63,7 +63,7 @@ jobs:
           FINRA_SHORT_CSV: data/finra_short_interest.csv
           FINRA_REG_SHO_CSV: data/finra_reg_sho_daily.csv
           ALLOW_UNKNOWN_INDUSTRY: "1"
-        run: python scanner/hardened_runner.py
+        run: python -m scanner.hardened_runner
 
       - name: Send stateful email alerts
         if: steps.session.outputs.in_session == 'true'
@@ -76,7 +76,7 @@ jobs:
           SMTP_USE_SSL: ${{ secrets.SMTP_USE_SSL }}
           ALERT_EMAIL_FROM: ${{ secrets.ALERT_EMAIL_FROM }}
           ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
-        run: python scanner/smart_alerts.py
+        run: python -m scanner.smart_alerts
 
       - name: Commit fresh scan data and research inputs
         if: steps.session.outputs.in_session == 'true'
