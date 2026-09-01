@@ -3,11 +3,10 @@
 Default mode requires NO proprietary API keys:
 - yfinance public endpoints provide historical OHLCV, a market screener,
   company metadata and listed option chains.
-- FINRA, Finnhub, Alpha Vantage and Discord are optional enrichments.
+- FINRA is an optional authoritative enrichment for short-interest data.
 
-Important: public Yahoo/yfinance short-interest fields are provider data and
-may be stale or unavailable. When FINRA data exists, the official FINRA feed
-wins for short-interest fields.
+The calculations are local Python calculations. Missing provider data is
+reported as missing; the scanner does not fabricate values.
 """
 from __future__ import annotations
 
@@ -133,12 +132,13 @@ def state_signature(df: pd.DataFrame, pos: int) -> np.ndarray | None:
     if pos < 20:
         return None
     c = df["Close"].astype(float)
+    h = df["High"].astype(float)
     v = df["Volume"].astype(float)
     sma = c.rolling(20).mean()
     sd = c.rolling(20).std()
     z = (c - sma) / sd
     rr = rsi(c)
-    hi = c.rolling(252, min_periods=20).max()
+    hi = h.rolling(252, min_periods=20).max()
     dist = (hi - c) / hi
     rv = v / v.rolling(20).mean()
     sig = np.array([z.iloc[pos], rr.iloc[pos], dist.iloc[pos], rv.iloc[pos]], dtype=float)
@@ -196,11 +196,14 @@ def _num(x):
 
 
 def free_short_screener() -> list[dict]:
-    """Use Yahoo's public 'most_shorted_stocks' screener; no credential required."""
+    """Use Yahoo's public most-shorted-stocks screener; no credential required."""
     rows: dict[str, dict] = {}
     try:
         for offset in range(0, MAX_SQUEEZE_UNIVERSE, 250):
-            page = yf.screen("most_shorted_stocks", offset=offset, size=250, sortField="short_percentage_of_float.value", sortAsc=False)
+            page = yf.screen(
+                "most_shorted_stocks", offset=offset, size=250,
+                sortField="short_percentage_of_float.value", sortAsc=False,
+            )
             quotes = page.get("quotes", []) if isinstance(page, dict) else []
             if not quotes:
                 break
@@ -237,8 +240,7 @@ def options_snapshot(symbol: str, spot: float) -> dict:
         if not expirations:
             return {"status": "NO_OPTIONS"}
         use_exp = expirations[:3]
-        calls = []
-        puts = []
+        calls, puts = [], []
         for exp in use_exp:
             chain = t.option_chain(exp)
             calls.append(chain.calls.copy())
@@ -247,21 +249,24 @@ def options_snapshot(symbol: str, spot: float) -> dict:
         pdf = pd.concat(puts, ignore_index=True) if puts else pd.DataFrame()
         if cdf.empty and pdf.empty:
             return {"status": "NO_DATA"}
+
         def liquidity(frame):
             if frame.empty:
-                return {"oi": 0, "vol": 0, "spread": None, "contracts": 0}
+                return {"oi": 0, "vol": 0, "spread": None}
             oi = pd.to_numeric(frame.get("openInterest", 0), errors="coerce").fillna(0)
             vol = pd.to_numeric(frame.get("volume", 0), errors="coerce").fillna(0)
             bid = pd.to_numeric(frame.get("bid", 0), errors="coerce").fillna(0)
             ask = pd.to_numeric(frame.get("ask", 0), errors="coerce").fillna(0)
             mid = (bid + ask) / 2
             spread = ((ask - bid) / mid.replace(0, np.nan)).replace([np.inf, -np.inf], np.nan).dropna()
-            return {"oi": int(oi.sum()), "vol": int(vol.sum()), "spread": float(spread.median()) if not spread.empty else None, "contracts": len(frame)}
+            return {
+                "oi": int(oi.sum()), "vol": int(vol.sum()),
+                "spread": float(spread.median()) if not spread.empty else None,
+            }
+
         cl, pl = liquidity(cdf), liquidity(pdf)
         gex = 0.0
         for frame, sign in ((cdf, 1.0), (pdf, -1.0)):
-            if frame.empty:
-                continue
             for _, r in frame.iterrows():
                 strike = _num(r.get("strike")); iv = _num(r.get("impliedVolatility")); oi = _num(r.get("openInterest"))
                 if not strike or not iv or not oi:
@@ -272,7 +277,6 @@ def options_snapshot(symbol: str, spot: float) -> dict:
         spread = float(np.mean(spread_candidates)) if spread_candidates else None
         oi_total = cl["oi"] + pl["oi"]
         vol_total = cl["vol"] + pl["vol"]
-        # 0-100 liquidity score; deliberately transparent, not a probability.
         spread_score = max(0.0, 1.0 - min(spread or 1.0, 1.0))
         depth_score = min(1.0, math.log10(max(oi_total, 1)) / 5.0)
         activity_score = min(1.0, math.log10(max(vol_total, 1)) / 4.0)
@@ -306,7 +310,7 @@ def scan_a(signal_time: str) -> list[dict]:
         df = history(symbol, "2y")
         if df is None or len(df) < 260:
             continue
-        sector, industry, market_cap, _, avg_info_vol = industry_info(symbol)
+        sector, industry, market_cap, _, _ = industry_info(symbol)
         if sector in EXCLUDED_SECTORS or industry in EXCLUDED_SECTORS:
             continue
         f = metrics(df)
@@ -357,7 +361,6 @@ def scan_b(signal_time: str) -> list[dict]:
             continue
         price = _num(quote_value(q, "regularMarketPrice", "postMarketPrice", "price"))
         mcap = _num(quote_value(q, "marketCap", "intradaymarketcap"))
-        avgvol = _num(quote_value(q, "averageDailyVolume3Month", "avgdailyvol3m"))
         si_pct = _num(quote_value(q, "shortPercentageOfFloat", "shortPctOfFloat", "short_percentage_of_float"))
         if si_pct is not None and si_pct < 1:
             si_pct *= 100
@@ -373,10 +376,9 @@ def scan_b(signal_time: str) -> list[dict]:
         sector = str(quote_value(q, "sector") or "Unknown")
         industry = str(quote_value(q, "industry") or "Unknown")
         if sector == "Unknown" or industry == "Unknown":
-            sec2, ind2, mc2, _, av2 = industry_info(s)
+            sec2, ind2, mc2, _, _ = industry_info(s)
             sector, industry = sec2, ind2
             mcap = mcap or mc2
-            avgvol = avgvol or av2
         if sector in EXCLUDED_SECTORS or industry in EXCLUDED_SECTORS:
             continue
         df = history(s, "6mo")
@@ -417,43 +419,14 @@ def scan_b(signal_time: str) -> list[dict]:
 
 def enrich_options(items: list[dict]) -> list[dict]:
     for x in items[:FINALISTS_FOR_OPTIONS]:
-        snap = options_snapshot(x["ticker"], float(x["price"]))
-        x["options"] = snap
+        x["options"] = options_snapshot(x["ticker"], float(x["price"]))
     return items
-
-
-def send_discord(a: list[dict], b: list[dict]) -> bool:
-    url = os.getenv("DISCORD_WEBHOOK_URL")
-    if not url:
-        return False
-    cutoff = float(os.getenv("ALERT_MIN_SCORE", "85"))
-    lines = ["**Quant Scanner — high-confidence candidates**"]
-    for kind, items in (("A", a), ("B", b)):
-        for x in items:
-            if x["score"] < cutoff:
-                continue
-            opt = x.get("options", {}).get("status", "NOT_CHECKED")
-            extra = ""
-            if kind == "A" and x.get("downside_probability_5d") is not None:
-                extra = f" | P5d-down={x['downside_probability_5d']:.1f}% | n={x['probability_sample']}"
-            lines.append(f"{kind} **{x['ticker']}** score={x['score']:.1f} | options={opt}{extra}")
-    if len(lines) == 1:
-        return False
-    try:
-        r = __import__("requests").post(url, json={"content": "\n".join(lines)}, timeout=15)
-        r.raise_for_status()
-        return True
-    except Exception as exc:
-        print(f"Discord alert failed: {exc}")
-        return False
 
 
 def main():
     ts = now_utc()
-    a = scan_a(ts)
-    b = scan_b(ts)
-    a = enrich_options(a)
-    b = enrich_options(b)
+    a = enrich_options(scan_a(ts))
+    b = enrich_options(scan_b(ts))
     payload = {
         "generated_at": ts,
         "status": "LIVE — ZERO-KEY MODE",
@@ -463,14 +436,12 @@ def main():
             "company_metadata": "Yahoo/yfinance public info",
             "options": "yfinance public option chains",
             "short_interest": "FINRA when configured; otherwise Yahoo/yfinance public screener",
-            "finnhub": bool(os.getenv("FINNHUB_API_KEY")),
-            "alpha_vantage": bool(os.getenv("ALPHA_VANTAGE_API_KEY")),
             "finra": bool(os.getenv("FINRA_CLIENT_ID") and os.getenv("FINRA_CLIENT_SECRET")),
         },
         "scanner_a": a,
         "scanner_b": b,
         "signal_lab": "ACTIVE",
-        "alerts_enabled": bool(os.getenv("DISCORD_WEBHOOK_URL")),
+        "alerts_enabled": bool(os.getenv("SMTP_HOST") and os.getenv("ALERT_EMAIL_TO")),
         "methodology": {
             "A": "52-week proximity + extension state + RSI + relative volume + leakage-safe historical analogs.",
             "B": "Short crowding + DTC + short-interest change + relative volume + momentum; options are finalist enrichment.",
@@ -478,12 +449,12 @@ def main():
             "options": "Actual public chain snapshot; no fabricated OI, IV, spread, or gamma values.",
         },
         "notes": [
-            "ZERO-KEY MODE is fully usable without Finnhub, Alpha Vantage, or FINRA credentials.",
+            "ZERO-KEY MODE is fully usable without FINRA credentials.",
             "Yahoo/yfinance short-interest values are provider data and may be stale; FINRA overrides them when available.",
             "Scores are rankings, not probabilities or guarantees.",
+            "Email alerts are delivered by scanner/smart_alerts.py from GitHub Actions; the local Windows companion provides native desktop alerts.",
         ],
     }
-    # Signal lab lives alongside the existing research database.
     try:
         from scanner.signal_lab import record_signals, write_lab_report
         record_signals(payload)
@@ -497,9 +468,8 @@ def main():
         }
     except Exception as exc:
         payload["signal_lab_summary"] = {"status": "ERROR", "error": str(exc)}
-    payload["discord_alert_sent"] = send_discord(a, b)
     (OUT / "scanner-data.json").write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
-    print(json.dumps({"scanner_a": len(a), "scanner_b": len(b), "zero_key_mode": True, "alerts": payload["discord_alert_sent"]}))
+    print(json.dumps({"scanner_a": len(a), "scanner_b": len(b), "zero_key_mode": True}))
 
 
 if __name__ == "__main__":
