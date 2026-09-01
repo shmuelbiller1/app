@@ -1,12 +1,11 @@
 """Windows companion for Quant Scanner.
 
-Runs the existing zero-key-first scanner locally on a user's Windows PC during
-09:30-16:00 America/New_York, then generates native Windows toast notifications
-for NEW, STRENGTHENING, WEAKENING and INVALIDATED research states.
+Runs the zero-key-first scanner locally on a Windows PC during 09:30-16:00
+America/New_York, then generates native Windows toast notifications for
+NEW, STRENGTHENING, WEAKENING and INVALIDATED research states.
 
-No financial credentials are required. Optional local FINRA/Finnhub/Alpha
-Vantage variables are honored by the underlying scanner if the user chooses to
-configure them separately.
+No financial credentials are required. The companion reads the scanner's
+current JSON field names directly; it does not use the cloud email transport.
 """
 from __future__ import annotations
 
@@ -16,7 +15,6 @@ import os
 import subprocess
 import sys
 import time
-import webbrowser
 from datetime import datetime, time as dtime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -69,22 +67,28 @@ def stable_signal_id(kind: str, x: dict) -> str:
 
 
 def describe(kind: str, x: dict) -> str:
-    score = float(x.get("score", 0))
+    score = float(x.get("score", 0) or 0)
+    options = x.get("options") if isinstance(x.get("options"), dict) else {}
+    opt = options.get("status", "NOT_CHECKED")
     if kind == "A":
+        bits = [
+            f"Score {score:.1f}",
+            f"52W distance {x.get('distance_52w', '?')}%",
+            f"RV {x.get('relative_volume', '?')}x",
+            f"RSI {x.get('rsi14', '?')}",
+        ]
         p = x.get("downside_probability_5d")
         n = x.get("probability_sample")
-        opt = (x.get("options") or {}).get("status", "NOT_CHECKED") if isinstance(x.get("options"), dict) else x.get("options", "NOT_CHECKED")
-        bits = [f"Score {score:.1f}", f"52W distance {x.get('high_distance', '?')}%", f"RV {x.get('relative_volume', '?')}x"]
-        if p is not None: bits.append(f"5D downside {p:.1f}% (n={n})")
+        if isinstance(p, (int, float)):
+            bits.append(f"5D downside {p:.1f}% (n={n})")
         bits.append(f"Options {opt}")
         return " • ".join(bits)
-    opt = (x.get("options") or {}).get("status", "NOT_CHECKED") if isinstance(x.get("options"), dict) else x.get("options", "NOT_CHECKED")
     return " • ".join([
         f"Score {score:.1f}",
-        f"Short/float {x.get('short_float', '?')}%",
+        f"Short/float {x.get('short_float_pct', '?')}%",
         f"DTC {x.get('days_to_cover', '?')}",
-        f"RV {x.get('rel_volume', '?')}x",
-        f"5D {x.get('return_5d', '?')}%",
+        f"RV {x.get('relative_volume', '?')}x",
+        f"5D {x.get('momentum_5d', '?')}%",
         f"Options {opt}",
     ])
 
@@ -92,7 +96,6 @@ def describe(kind: str, x: dict) -> str:
 def notify(title: str, message: str) -> None:
     log(f"NOTIFY: {title} | {message}")
     if toast is None:
-        # A clear log is preferable to silently claiming a desktop alert worked.
         return
     try:
         toast(title, message, on_click=DASHBOARD_URL, duration="long")
@@ -106,8 +109,11 @@ def run_scanner() -> dict | None:
         log(f"missing scanner: {scanner}")
         return None
     env = os.environ.copy()
-    env.pop("DISCORD_WEBHOOK_URL", None)  # PC alerts are native; avoid duplicate Discord notices.
-    result = subprocess.run([sys.executable, str(scanner)], cwd=str(ROOT), env=env, capture_output=True, text=True, timeout=15 * 60)
+    env.pop("DISCORD_WEBHOOK_URL", None)
+    result = subprocess.run(
+        [sys.executable, str(scanner)], cwd=str(ROOT), env=env,
+        capture_output=True, text=True, timeout=15 * 60,
+    )
     if result.returncode != 0:
         log(f"scanner failed rc={result.returncode}: {result.stderr[-1500:]}")
         return None
@@ -144,15 +150,16 @@ def process_changes(payload: dict) -> None:
                 elif delta <= -WEAKEN_DELTA and previous_score >= SCORE_THRESHOLD and score < previous_score:
                     events.append(("⚠️ SIGNAL WEAKENING", kind, x))
 
-    # Signals that were previously strong but disappeared from the qualifying set.
     for key, previous in state.items():
         if key not in current and float(previous.get("score", 0)) >= SCORE_THRESHOLD:
-            title = f"⚠️ SIGNAL INVALIDATED — {previous.get('ticker', '?')}"
-            events.append((title, previous.get("kind", "?"), {"ticker": previous.get("ticker"), "score": RESET_BELOW, "options": "NOT_CHECKED"}))
+            events.append((
+                f"⚠️ SIGNAL INVALIDATED — {previous.get('ticker', '?')}",
+                previous.get("kind", "?"),
+                {"ticker": previous.get("ticker"), "score": RESET_BELOW, "options": {"status": "NOT_CHECKED"}},
+            ))
 
     for title, kind, x in events:
-        title = f"{title} | Scanner {kind} | {x.get('ticker', '?')}"
-        notify(title, describe(kind, x))
+        notify(f"{title} | Scanner {kind} | {x.get('ticker', '?')}", describe(kind, x))
     state.update(current)
     save_state(state)
 
@@ -177,8 +184,7 @@ def main() -> None:
                 log("market closed: sleeping")
         except Exception as exc:
             log(f"agent error: {exc}")
-        sleep_for = wait_to_next_half_hour()
-        time.sleep(sleep_for)
+        time.sleep(wait_to_next_half_hour())
 
 
 if __name__ == "__main__":
