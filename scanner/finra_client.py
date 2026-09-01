@@ -38,10 +38,21 @@ def get_access_token() -> str:
     return token
 
 
-def _get_json_dataset(group: str, dataset: str, params: dict[str, Any]) -> tuple[list[dict[str, Any]], requests.structures.CaseInsensitiveDict[str]]:
+def _get_json_dataset(
+    group: str, dataset: str, params: dict[str, Any]
+) -> tuple[list[dict[str, Any]], requests.structures.CaseInsensitiveDict[str]]:
     token = get_access_token()
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json", "Data-API-Version": "1"}
-    r = SESSION.get(f"{API_BASE}/data/group/{group}/name/{dataset}", params=params, headers=headers, timeout=45)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json",
+        "Data-API-Version": "1",
+    }
+    r = SESSION.get(
+        f"{API_BASE}/data/group/{group}/name/{dataset}",
+        params=params,
+        headers=headers,
+        timeout=45,
+    )
     r.raise_for_status()
     payload = r.json()
     if not isinstance(payload, list):
@@ -49,10 +60,46 @@ def _get_json_dataset(group: str, dataset: str, params: dict[str, Any]) -> tuple
     return payload, r.headers
 
 
-def _post_json_dataset(group: str, dataset: str, body: dict[str, Any]) -> tuple[list[dict[str, Any]], requests.structures.CaseInsensitiveDict[str]]:
+def _get_partitions(group: str, dataset: str) -> dict[str, Any]:
+    """Return FINRA partition metadata for a dataset.
+
+    FINRA restricts sorting unless required partition filters are supplied.
+    Reading the partitions endpoint avoids needing a sorted full-dataset query
+    just to discover the newest publication date.
+    """
     token = get_access_token()
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json", "Data-API-Version": "1"}
-    r = SESSION.post(f"{API_BASE}/data/group/{group}/name/{dataset}", json=body, headers=headers, timeout=60)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json",
+        "Data-API-Version": "1",
+    }
+    r = SESSION.get(
+        f"{API_BASE}/partitions/group/{group}/name/{dataset}",
+        headers=headers,
+        timeout=45,
+    )
+    r.raise_for_status()
+    payload = r.json()
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"FINRA partitions for {group}/{dataset} returned unexpected payload")
+    return payload
+
+
+def _post_json_dataset(
+    group: str, dataset: str, body: dict[str, Any]
+) -> tuple[list[dict[str, Any]], requests.structures.CaseInsensitiveDict[str]]:
+    token = get_access_token()
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json",
+        "Data-API-Version": "1",
+    }
+    r = SESSION.post(
+        f"{API_BASE}/data/group/{group}/name/{dataset}",
+        json=body,
+        headers=headers,
+        timeout=60,
+    )
     r.raise_for_status()
     payload = r.json()
     if not isinstance(payload, list):
@@ -61,14 +108,36 @@ def _post_json_dataset(group: str, dataset: str, body: dict[str, Any]) -> tuple[
 
 
 def _latest_date(group: str, dataset: str, field: str) -> str:
+    """Find the newest value for a date partition without using restricted sorting."""
+    try:
+        payload = _get_partitions(group, dataset)
+        partition_fields = [str(x) for x in payload.get("partitionFields", [])]
+        available = payload.get("availablePartitions", [])
+        if field in partition_fields and isinstance(available, list):
+            idx = partition_fields.index(field)
+            values: list[str] = []
+            for item in available:
+                if not isinstance(item, dict):
+                    continue
+                parts = item.get("partitions", [])
+                if isinstance(parts, list) and idx < len(parts) and parts[idx] not in (None, ""):
+                    values.append(str(parts[idx]).split(" ")[0])
+            if values:
+                return max(values)
+    except (requests.RequestException, ValueError, TypeError):
+        # Fall through to an unsorted data sample. This preserves compatibility
+        # if a future FINRA dataset changes its partition metadata shape.
+        pass
+
     rows, _ = _get_json_dataset(
         group,
         dataset,
-        {"limit": 1, "sortFields": f"-{field}", "fields": field},
+        {"limit": 1000, "fields": field},
     )
-    if not rows or not rows[0].get(field):
+    values = [str(row[field]).split(" ")[0] for row in rows if row.get(field)]
+    if not values:
         raise RuntimeError(f"Could not determine latest {field} from FINRA {dataset}")
-    return str(rows[0][field]).split(" ")[0]
+    return max(values)
 
 
 def _paged_current_date(group: str, dataset: str, date_field: str) -> tuple[list[dict[str, Any]], str]:
@@ -88,8 +157,9 @@ def _paged_current_date(group: str, dataset: str, date_field: str) -> tuple[list
     body_base = {
         "limit": 5000,
         "fields": fields,
-        "compareFilters": [{"compareType": "equal", "fieldName": date_field, "fieldValue": latest}],
-        "sortFields": [f"+{fields[0]}"]
+        "compareFilters": [
+            {"compareType": "equal", "fieldName": date_field, "fieldValue": latest}
+        ],
     }
     all_rows: list[dict[str, Any]] = []
     offset = 0
