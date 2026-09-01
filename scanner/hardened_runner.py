@@ -1,19 +1,11 @@
 """Runtime hardening adapter for the zero-key scanner.
 
-This module deliberately sits OUTSIDE the scanner's signal logic. It adds the
-high-value reliability patterns found in mature open-source quant/data
-projects without replacing the scanner with a framework:
+Thin reliability layer inspired by mature open-source quant/data projects:
+retry/backoff, in-process caching, OHLCV validation, strict historical-state
+comparability, data-health reporting, and explicit options-GEX caveats.
 
-* retry + exponential backoff with jitter around Yahoo downloads/screening;
-* in-process history caching so the scanner and Signal Lab do not fetch the
-  same daily series twice in one run;
-* OHLCV sanity checks before data reaches the signal logic;
-* stricter 252-session comparability for the historical analog detector;
-* a visible data-health summary written into scanner-data.json;
-* explicit labelling of the approximate options gamma convention.
-
-Nothing here manufactures missing data. Failed or invalid data remains
-missing, and the runner records the degradation instead of hiding it.
+It does not fabricate missing values and does not change the scanner's scoring
+model except for making historical analog states comparable.
 """
 from __future__ import annotations
 
@@ -30,20 +22,15 @@ import scanner.run_scanner as scanner
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "frontend" / "public" / "scanner-data.json"
-
 MAX_RETRIES = 3
 BASE_BACKOFF_SECONDS = 0.75
 JITTER_SECONDS = 0.25
 
-_health = {
-    "history_requests": 0,
-    "history_cache_hits": 0,
-    "history_failures": 0,
-    "history_invalid": 0,
-    "screen_attempts": 0,
-    "screen_failures": 0,
-}
+_health = {"history_requests": 0, "history_cache_hits": 0, "history_failures": 0,
+           "history_invalid": 0, "screen_attempts": 0, "screen_failures": 0}
 _history_cache: dict[tuple[str, str], pd.DataFrame | None] = {}
+_ORIGINAL_SAFE_INFO = scanner.safe_info
+_ORIGINAL_YF_SCREEN = scanner.yf.screen
 
 
 def _retry(call, label: str):
@@ -75,17 +62,9 @@ def _validate_ohlcv(df: pd.DataFrame | None, symbol: str) -> pd.DataFrame | None
     x = x.dropna(subset=list(required))
     if x.empty:
         return None
-    # Basic market-data invariants. A bad provider row must never become a
-    # high-confidence signal merely because the calculations accept it.
-    bad = (
-        (x["Close"] <= 0)
-        | (x["High"] <= 0)
-        | (x["Low"] <= 0)
-        | (x["High"] < x["Low"])
-        | (x["High"] < x["Close"])
-        | (x["Low"] > x["Close"])
-        | (x["Volume"] < 0)
-    )
+    bad = ((x["Close"] <= 0) | (x["High"] <= 0) | (x["Low"] <= 0)
+           | (x["High"] < x["Low"]) | (x["High"] < x["Close"])
+           | (x["Low"] > x["Close"]) | (x["Volume"] < 0))
     if bool(bad.any()):
         print(f"{symbol}: rejected {int(bad.sum())} invalid OHLCV rows")
         return None
@@ -95,7 +74,7 @@ def _validate_ohlcv(df: pd.DataFrame | None, symbol: str) -> pd.DataFrame | None
 @functools.lru_cache(maxsize=1024)
 def _cached_info(symbol: str) -> dict:
     try:
-        return scanner.safe_info.__wrapped__(symbol) if hasattr(scanner.safe_info, "__wrapped__") else scanner.safe_info(symbol)
+        return _ORIGINAL_SAFE_INFO(symbol)
     except Exception:
         return {}
 
@@ -109,14 +88,8 @@ def hardened_history(symbol: str, period: str = "2y") -> pd.DataFrame | None:
         return None if cached is None else cached.copy()
 
     def fetch():
-        raw = scanner.yf.download(
-            symbol,
-            period=period,
-            interval="1d",
-            auto_adjust=False,
-            progress=False,
-            threads=False,
-        )
+        raw = scanner.yf.download(symbol, period=period, interval="1d", auto_adjust=False,
+                                  progress=False, threads=False)
         return scanner.normalize_history(raw, symbol)
 
     try:
@@ -126,7 +99,6 @@ def hardened_history(symbol: str, period: str = "2y") -> pd.DataFrame | None:
         print(f"history {symbol}: {exc}")
         _history_cache[key] = None
         return None
-
     data = _validate_ohlcv(data, symbol)
     if data is None:
         _health["history_invalid"] += 1
@@ -137,20 +109,14 @@ def hardened_history(symbol: str, period: str = "2y") -> pd.DataFrame | None:
 def hardened_screen(query, **kwargs):
     _health["screen_attempts"] += 1
     try:
-        return _retry(lambda: scanner.yf.screen(query, **kwargs), "Yahoo screener")
+        return _retry(lambda: _ORIGINAL_YF_SCREEN(query, **kwargs), "Yahoo screener")
     except Exception:
         _health["screen_failures"] += 1
         raise
 
 
 def strict_state_signature(df: pd.DataFrame, pos: int) -> np.ndarray | None:
-    """Comparable historical state: the 52-week feature requires 252 sessions.
-
-    The original detector allowed a 20-session partial rolling high for old
-    analogs while the live feature used a full 252-session high. That mixes
-    two different definitions of "distance from 52-week high". Requiring the
-    full window makes historical and current states commensurate.
-    """
+    """Require a full 252-session high window for historical analogs."""
     if pos < 252:
         return None
     c = pd.to_numeric(df["Close"], errors="coerce")
@@ -168,7 +134,6 @@ def strict_state_signature(df: pd.DataFrame, pos: int) -> np.ndarray | None:
 
 
 def hardened_signal_history(ticker: str) -> pd.DataFrame | None:
-    """Signal Lab adapter using the same cached/validated 2y series."""
     df = hardened_history(ticker, "2y")
     if df is None:
         return None
@@ -182,19 +147,11 @@ def patch():
     scanner.safe_info = _cached_info
     scanner.yf.screen = hardened_screen
     scanner.state_signature = strict_state_signature
-
     import scanner.signal_lab as lab
     lab._history = hardened_signal_history
 
 
 def _annotate_options():
-    """Add explicit caveats to already-computed option snapshots.
-
-    The existing scanner's gamma is useful as relative context, but it is not
-    an observation of dealer inventory. The sign convention also treats calls
-    and puts as opposing exposures. Publishing the assumption next to the
-    number is safer than allowing a precise-looking figure to imply certainty.
-    """
     if not OUT.exists():
         return
     try:
