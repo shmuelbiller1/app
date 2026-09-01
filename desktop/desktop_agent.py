@@ -1,11 +1,8 @@
 """Windows companion for Quant Scanner.
 
-Runs the zero-key-first scanner locally on a Windows PC during 09:30-16:00
-America/New_York, then generates native Windows toast notifications for
-NEW, STRENGTHENING, WEAKENING and INVALIDATED research states.
-
-No financial credentials are required. The companion reads the scanner's
-current JSON field names directly; it does not use the cloud email transport.
+Runs the zero-key-first hardened scanner locally on a Windows PC during
+09:30-16:00 America/New_York, then generates native Windows toast
+notifications for NEW, STRENGTHENING, WEAKENING and INVALIDATED states.
 """
 from __future__ import annotations
 
@@ -71,12 +68,8 @@ def describe(kind: str, x: dict) -> str:
     options = x.get("options") if isinstance(x.get("options"), dict) else {}
     opt = options.get("status", "NOT_CHECKED")
     if kind == "A":
-        bits = [
-            f"Score {score:.1f}",
-            f"52W distance {x.get('distance_52w', '?')}%",
-            f"RV {x.get('relative_volume', '?')}x",
-            f"RSI {x.get('rsi14', '?')}",
-        ]
+        bits = [f"Score {score:.1f}", f"52W distance {x.get('distance_52w', '?')}%",
+                f"RV {x.get('relative_volume', '?')}x", f"RSI {x.get('rsi14', '?')}"]
         p = x.get("downside_probability_5d")
         n = x.get("probability_sample")
         if isinstance(p, (int, float)):
@@ -84,12 +77,9 @@ def describe(kind: str, x: dict) -> str:
         bits.append(f"Options {opt}")
         return " • ".join(bits)
     return " • ".join([
-        f"Score {score:.1f}",
-        f"Short/float {x.get('short_float_pct', '?')}%",
-        f"DTC {x.get('days_to_cover', '?')}",
-        f"RV {x.get('relative_volume', '?')}x",
-        f"5D {x.get('momentum_5d', '?')}%",
-        f"Options {opt}",
+        f"Score {score:.1f}", f"Short/float {x.get('short_float_pct', '?')}%",
+        f"DTC {x.get('days_to_cover', '?')}", f"RV {x.get('relative_volume', '?')}x",
+        f"5D {x.get('momentum_5d', '?')}%", f"Options {opt}",
     ])
 
 
@@ -104,7 +94,7 @@ def notify(title: str, message: str) -> None:
 
 
 def run_scanner() -> dict | None:
-    scanner = ROOT / "scanner" / "run_scanner.py"
+    scanner = ROOT / "scanner" / "hardened_runner.py"
     if not scanner.exists():
         log(f"missing scanner: {scanner}")
         return None
@@ -117,6 +107,8 @@ def run_scanner() -> dict | None:
     if result.returncode != 0:
         log(f"scanner failed rc={result.returncode}: {result.stderr[-1500:]}")
         return None
+    if result.stdout:
+        log(f"scanner: {result.stdout[-1500:]}")
     data_file = ROOT / "frontend" / "public" / "scanner-data.json"
     if not data_file.exists():
         log("scanner finished but scanner-data.json was not produced")
@@ -152,11 +144,8 @@ def process_changes(payload: dict) -> None:
 
     for key, previous in state.items():
         if key not in current and float(previous.get("score", 0)) >= SCORE_THRESHOLD:
-            events.append((
-                f"⚠️ SIGNAL INVALIDATED — {previous.get('ticker', '?')}",
-                previous.get("kind", "?"),
-                {"ticker": previous.get("ticker"), "score": RESET_BELOW, "options": {"status": "NOT_CHECKED"}},
-            ))
+            events.append((f"⚠️ SIGNAL INVALIDATED — {previous.get('ticker', '?')}", previous.get("kind", "?"),
+                           {"ticker": previous.get("ticker"), "score": RESET_BELOW, "options": {"status": "NOT_CHECKED"}}))
 
     for title, kind, x in events:
         notify(f"{title} | Scanner {kind} | {x.get('ticker', '?')}", describe(kind, x))
@@ -176,7 +165,7 @@ def main() -> None:
     while True:
         try:
             if session_open():
-                log("market session open: running scanner")
+                log("market session open: running hardened scanner")
                 payload = run_scanner()
                 if payload is not None:
                     process_changes(payload)
