@@ -27,10 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -51,6 +51,7 @@ jobs:
           FINRA_CLIENT_ID: ${{ secrets.FINRA_CLIENT_ID }}
           FINRA_CLIENT_SECRET: ${{ secrets.FINRA_CLIENT_SECRET }}
         run: |
+          rm -f data/finra_short_interest.csv data/finra_reg_sho_daily.csv
           if [ -n "$FINRA_CLIENT_ID" ] && [ -n "$FINRA_CLIENT_SECRET" ]; then
             python -c "from scanner.finra_client import run_finra_ingest; print(run_finra_ingest())"
           else
@@ -83,12 +84,12 @@ jobs:
         run: |
           git config user.name "quant-scanner[bot]"
           git config user.email "quant-scanner[bot]@users.noreply.github.com"
-          git add frontend/public/scanner-data.json frontend/public/signal-lab.json data/finra_short_interest.csv data/finra_reg_sho_daily.csv data/signal_lab.sqlite3 data/alert_state.json
+          git add -A frontend/public/scanner-data.json frontend/public/signal-lab.json data/finra_short_interest.csv data/finra_reg_sho_daily.csv data/signal_lab.sqlite3 data/alert_state.json
           git diff --cached --quiet || git commit -m "chore: refresh live scanner data"
           git push
 
       - name: Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "20"
           cache: "yarn"
@@ -101,12 +102,12 @@ jobs:
           yarn build
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: frontend/build
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
