@@ -1,6 +1,13 @@
 {
   "signals": 0,
+  "signals_recorded_total": 0,
+  "signals_by_scanner": {},
+  "daily_observations": 0,
+  "matured_outcome_rows": 0,
+  "pending_outcomes": 0,
   "horizons": {},
+  "status": "COLLECTING_OUTCOMES",
+  "message": "Completed-daily research observations are being collected; no forward outcomes have matured yet.",
   "outcomes_filled_this_run": 0,
-  "generated_at": "2026-09-02T14:07:02.110651+00:00"
+  "generated_at": "2026-09-02T17:11:02.740178+00:00"
 }
