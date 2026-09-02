@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Bell, RefreshCw, TrendingDown, Zap, ShieldAlert, Clock3, Database, Settings2, Activity, Info } from "lucide-react";
+import { Bell, RefreshCw, TrendingDown, Zap, ShieldAlert, Clock3, Settings2, Activity, Info } from "lucide-react";
 
 const demo={generated_at:"Demo data — run scanner workflow to refresh",market_status:"READY",scanner_a:[],scanner_b:[]};
 function Score({value}){const v=Number(value||0);return <div className="qs-score"><div className="qs-score-track"><span style={{width:`${Math.min(Math.max(v,0),100)}%`}}/></div><b>{v.toFixed(1)}</b></div>}
@@ -9,7 +9,9 @@ export default function QuantScanner(){
  const [data,setData]=useState(demo),[tab,setTab]=useState("A"),[loading,setLoading]=useState(false),[alerts,setAlerts]=useState(true);
  const load=async()=>{setLoading(true);try{const r=await fetch(`${process.env.PUBLIC_URL||""}/scanner-data.json?${Date.now()}`);if(r.ok)setData(await r.json())}catch(e){}setLoading(false)};
  useEffect(()=>{load()},[]);
- const all=[...(data.scanner_a||[]),...(data.scanner_b||[])], high=useMemo(()=>all.filter(x=>Number(x.score)>=90).length,[data]),top=Math.max(...all.map(x=>Number(x.score)||0),0);
+ const all=useMemo(()=>[...(data.scanner_a||[]),...(data.scanner_b||[])],[data.scanner_a,data.scanner_b]);
+ const high=useMemo(()=>all.filter(x=>Number(x.score)>=90).length,[all]);
+ const top=useMemo(()=>Math.max(...all.map(x=>Number(x.score)||0),0),[all]);
  return <div className="quant-scanner"><header className="qs-header"><div className="qs-brand"><div className="qs-mark">QS</div><div><strong>QUANT SCANNER</strong><span>OPPORTUNITY RESEARCH ENGINE</span></div></div><div className="qs-actions"><span className="qs-live"><i/> {data.market_status||"READY"}</span><button onClick={load}><RefreshCw size={15} className={loading?"spin":""}/> Refresh</button><button className={alerts?"active":""} onClick={()=>setAlerts(!alerts)}><Bell size={15}/> Alerts</button></div></header>
  <main className="qs-main"><section className="qs-hero"><div><div className="qs-eyebrow">SYSTEMATIC MARKET RESEARCH</div><h1>Find the <em>extreme.</em><br/>Measure the evidence.</h1><p>Scanner A searches leveraged-fund overextension and historical reversal states. Scanner B searches short-interest crowding with price/volume confirmation. Scores rank setups; probabilities and confidence are reported separately.</p></div><div className="qs-status-card"><div><span>ENGINE STATUS</span><b>ONLINE</b></div><div><span>CANDIDATES</span><b>{all.length}</b></div><div><span>HIGH SCORE</span><b>{high}</b></div></div></section>
  <section className="qs-metrics"><div><small>SCANNER A</small><strong>{(data.scanner_a||[]).length}</strong><span>leveraged reversal</span></div><div><small>SCANNER B</small><strong>{(data.scanner_b||[]).length}</strong><span>squeeze setups</span></div><div><small>TOP SCORE</small><strong>{top.toFixed(1)}</strong><span>ranking only</span></div><div><small>LAST RUN</small><strong>AUTO</strong><span>{data.generated_at}</span></div></section>
