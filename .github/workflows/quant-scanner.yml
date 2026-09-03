@@ -3,11 +3,13 @@ name: Quant Market Scanner
 on:
   workflow_dispatch:
   schedule:
-    # GitHub cron is UTC. This broad envelope covers both EDT and EST.
-    # session_gate.py is the authoritative America/New_York 09:30–16:00 gate,
-    # so late UTC triggers become successful no-op runs rather than scanners.
+    # GitHub cron is UTC. This envelope covers both EDT and EST.
     - cron: "*/30 13-21 * * 1-5"
 
+# IMPORTANT: Pages must be enabled once in repository settings with
+# "GitHub Actions" as the build/deployment source. configure-pages cannot
+# discover a Pages site that has never been enabled, which is the failure seen
+# in run 33781850574.
 permissions:
   contents: write
   pages: write
@@ -15,7 +17,7 @@ permissions:
 
 concurrency:
   group: quant-scanner
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   ALERT_MIN_SCORE: "85"
