@@ -1,12 +1,12 @@
 {
-  "signals": 1,
-  "signals_recorded_total": 1,
+  "signals": 3,
+  "signals_recorded_total": 3,
   "signals_by_scanner": {
-    "A": 1
+    "A": 3
   },
-  "daily_observations": 1,
+  "daily_observations": 3,
   "matured_outcome_rows": 1,
-  "pending_outcomes": 4,
+  "pending_outcomes": 14,
   "horizons": {},
   "cutoff": "2026-09-10T21:00:00+00:00",
   "A": {
@@ -242,6 +242,6 @@
       }
     }
   },
-  "outcomes_filled_this_run": 1,
-  "generated_at": "2026-09-14T18:35:01.056030+00:00"
+  "outcomes_filled_this_run": 0,
+  "generated_at": "2026-09-15T17:40:40.721677+00:00"
 }
