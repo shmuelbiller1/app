@@ -5,8 +5,8 @@
     "A": 3
   },
   "daily_observations": 3,
-  "matured_outcome_rows": 7,
-  "pending_outcomes": 8,
+  "matured_outcome_rows": 9,
+  "pending_outcomes": 6,
   "horizons": {},
   "cutoff": "2026-09-15T21:00:00+00:00",
   "A": {
@@ -32,13 +32,13 @@
         "ci95_positive_rate": null
       },
       "5": {
-        "n": 1,
-        "positive_rate": 1.0,
-        "mean_return_pct": 0.1908793251895302,
-        "median_return_pct": 0.1908793251895302,
+        "n": 3,
+        "positive_rate": 0.3333333333333333,
+        "mean_return_pct": -5.116954024600762,
+        "median_return_pct": -1.1795080503413824,
         "best_return_pct": 0.1908793251895302,
-        "worst_return_pct": 0.1908793251895302,
-        "mean_abs_return_pct": 0.1908793251895302,
+        "worst_return_pct": -14.362233348650433,
+        "mean_abs_return_pct": 5.244206908060448,
         "ci95_positive_rate": null
       },
       "10": {
@@ -70,7 +70,14 @@
         "ci95_positive_rate": null
       },
       "5": {
-        "n": 0
+        "n": 2,
+        "positive_rate": 0.0,
+        "mean_return_pct": -7.770870699495908,
+        "median_return_pct": -7.770870699495908,
+        "best_return_pct": -1.1795080503413824,
+        "worst_return_pct": -14.362233348650433,
+        "mean_abs_return_pct": 7.770870699495908,
+        "ci95_positive_rate": null
       },
       "10": {
         "n": 0
@@ -102,13 +109,13 @@
           "ci95_positive_rate": null
         },
         "5": {
-          "n": 1,
-          "positive_rate": 1.0,
-          "mean_return_pct": 0.1908793251895302,
-          "median_return_pct": 0.1908793251895302,
+          "n": 3,
+          "positive_rate": 0.3333333333333333,
+          "mean_return_pct": -5.116954024600762,
+          "median_return_pct": -1.1795080503413824,
           "best_return_pct": 0.1908793251895302,
-          "worst_return_pct": 0.1908793251895302,
-          "mean_abs_return_pct": 0.1908793251895302,
+          "worst_return_pct": -14.362233348650433,
+          "mean_abs_return_pct": 5.244206908060448,
           "ci95_positive_rate": null
         },
         "10": {
@@ -277,6 +284,6 @@
       }
     }
   },
-  "outcomes_filled_this_run": 0,
-  "generated_at": "2026-09-23T17:51:42.540696+00:00"
+  "outcomes_filled_this_run": 2,
+  "generated_at": "2026-09-24T17:55:17.890891+00:00"
 }
