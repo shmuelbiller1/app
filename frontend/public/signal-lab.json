@@ -5,8 +5,8 @@
     "A": 3
   },
   "daily_observations": 3,
-  "matured_outcome_rows": 9,
-  "pending_outcomes": 6,
+  "matured_outcome_rows": 10,
+  "pending_outcomes": 5,
   "horizons": {},
   "cutoff": "2026-09-15T21:00:00+00:00",
   "A": {
@@ -42,7 +42,14 @@
         "ci95_positive_rate": null
       },
       "10": {
-        "n": 0
+        "n": 1,
+        "positive_rate": 0.0,
+        "mean_return_pct": -0.9736554953496346,
+        "median_return_pct": -0.9736554953496346,
+        "best_return_pct": -0.9736554953496346,
+        "worst_return_pct": -0.9736554953496346,
+        "mean_abs_return_pct": 0.9736554953496346,
+        "ci95_positive_rate": null
       },
       "20": {
         "n": 0
@@ -119,7 +126,14 @@
           "ci95_positive_rate": null
         },
         "10": {
-          "n": 0
+          "n": 1,
+          "positive_rate": 0.0,
+          "mean_return_pct": -0.9736554953496346,
+          "median_return_pct": -0.9736554953496346,
+          "best_return_pct": -0.9736554953496346,
+          "worst_return_pct": -0.9736554953496346,
+          "mean_abs_return_pct": 0.9736554953496346,
+          "ci95_positive_rate": null
         },
         "20": {
           "n": 0
@@ -284,6 +298,6 @@
       }
     }
   },
-  "outcomes_filled_this_run": 2,
-  "generated_at": "2026-09-24T17:55:17.890891+00:00"
+  "outcomes_filled_this_run": 1,
+  "generated_at": "2026-09-25T17:56:33.700158+00:00"
 }
