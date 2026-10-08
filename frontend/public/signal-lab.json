@@ -1,12 +1,12 @@
 {
-  "signals": 3,
-  "signals_recorded_total": 3,
+  "signals": 4,
+  "signals_recorded_total": 4,
   "signals_by_scanner": {
-    "A": 3
+    "A": 4
   },
-  "daily_observations": 3,
+  "daily_observations": 4,
   "matured_outcome_rows": 12,
-  "pending_outcomes": 3,
+  "pending_outcomes": 8,
   "horizons": {},
   "cutoff": "2026-09-15T21:00:00+00:00",
   "A": {
@@ -306,5 +306,5 @@
     }
   },
   "outcomes_filled_this_run": 0,
-  "generated_at": "2026-10-07T19:22:43.964199+00:00"
+  "generated_at": "2026-10-08T19:19:51.317321+00:00"
 }
