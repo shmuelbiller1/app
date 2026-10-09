@@ -1,12 +1,12 @@
 {
-  "signals": 4,
-  "signals_recorded_total": 4,
+  "signals": 5,
+  "signals_recorded_total": 5,
   "signals_by_scanner": {
-    "A": 4
+    "A": 5
   },
-  "daily_observations": 4,
-  "matured_outcome_rows": 12,
-  "pending_outcomes": 8,
+  "daily_observations": 5,
+  "matured_outcome_rows": 13,
+  "pending_outcomes": 12,
   "horizons": {},
   "cutoff": "2026-09-15T21:00:00+00:00",
   "A": {
@@ -52,7 +52,14 @@
         "ci95_positive_rate": null
       },
       "20": {
-        "n": 0
+        "n": 1,
+        "positive_rate": 1.0,
+        "mean_return_pct": 8.66577649394118,
+        "median_return_pct": 8.66577649394118,
+        "best_return_pct": 8.66577649394118,
+        "worst_return_pct": 8.66577649394118,
+        "mean_abs_return_pct": 8.66577649394118,
+        "ci95_positive_rate": null
       }
     },
     "out_of_sample": {
@@ -143,7 +150,14 @@
           "ci95_positive_rate": null
         },
         "20": {
-          "n": 0
+          "n": 1,
+          "positive_rate": 1.0,
+          "mean_return_pct": 8.66577649394118,
+          "median_return_pct": 8.66577649394118,
+          "best_return_pct": 8.66577649394118,
+          "worst_return_pct": 8.66577649394118,
+          "mean_abs_return_pct": 8.66577649394118,
+          "ci95_positive_rate": null
         }
       },
       "70_80": {
@@ -305,6 +319,6 @@
       }
     }
   },
-  "outcomes_filled_this_run": 0,
-  "generated_at": "2026-10-08T19:19:51.317321+00:00"
+  "outcomes_filled_this_run": 1,
+  "generated_at": "2026-10-09T18:47:22.290211+00:00"
 }
