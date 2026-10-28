@@ -1,107 +1,107 @@
 {
   "A:DIG": {
-    "score": 29.5,
-    "last_seen": 1793126685.3548312,
+    "score": 32.8,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:ERX": {
-    "score": 27.9,
-    "last_seen": 1793126685.3548312,
+    "score": 31.7,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:GUSH": {
-    "score": 18.2,
-    "last_seen": 1793126685.3548312,
+    "score": 25.3,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:TZA": {
     "score": 0.0,
-    "last_seen": 1793126685.3548312,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:UCO": {
-    "score": 42.6,
-    "last_seen": 1793126685.3548312,
+    "score": 60.2,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:FAS": {
-    "score": 11.1,
-    "last_seen": 1793126685.3548312,
+    "score": 13.8,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:BOIL": {
     "score": 0.0,
-    "last_seen": 1793126685.3548312,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:SDOW": {
     "score": 0.0,
-    "last_seen": 1793126685.3548312,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:NUGT": {
     "score": 0.0,
-    "last_seen": 1793126685.3548312,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:FAZ": {
-    "score": 0.3,
-    "last_seen": 1793126685.3548312,
+    "score": 0.0,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:SCO": {
-    "score": 0.0,
-    "last_seen": 1793126685.3548312,
+    "score": 0.3,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:YINN": {
     "score": 0.0,
-    "last_seen": 1793126685.3548312,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:ERY": {
-    "score": 0.3,
-    "last_seen": 1793126685.3548312,
+    "score": 0.0,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:DRIP": {
-    "score": 0.5,
-    "last_seen": 1793126685.3548312,
+    "score": 0.0,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:DUST": {
-    "score": 14.9,
-    "last_seen": 1793126685.3548312,
+    "score": 7.9,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:KOLD": {
-    "score": 28.9,
-    "last_seen": 1793126685.3548312,
+    "score": 26.2,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:TNA": {
-    "score": 7.5,
-    "last_seen": 1793126685.3548312,
+    "score": 11.1,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:UDOW": {
-    "score": 9.8,
-    "last_seen": 1793126685.3548312,
+    "score": 13.5,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:YANG": {
-    "score": 26.8,
-    "last_seen": 1793126685.3548312,
+    "score": 22.5,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:DFEN": {
-    "score": 0.0,
-    "last_seen": 1793126685.3548312,
+    "score": 2.5,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   },
   "A:DUG": {
-    "score": 2.9,
-    "last_seen": 1793126685.3548312,
+    "score": 0.0,
+    "last_seen": 1793213426.677865,
     "above_threshold": false
   }
 }
