@@ -5,8 +5,8 @@
     "A": 16
   },
   "daily_observations": 16,
-  "matured_outcome_rows": 56,
-  "pending_outcomes": 24,
+  "matured_outcome_rows": 59,
+  "pending_outcomes": 21,
   "horizons": {},
   "cutoff": "2026-10-14T21:00:00+00:00",
   "A": {
@@ -42,13 +42,13 @@
         "ci95_positive_rate": null
       },
       "10": {
-        "n": 8,
-        "positive_rate": 0.625,
-        "mean_return_pct": 3.66101045411639,
-        "median_return_pct": 3.9571917477257745,
+        "n": 11,
+        "positive_rate": 0.7272727272727273,
+        "mean_return_pct": 3.858322459165477,
+        "median_return_pct": 3.747989264764584,
         "best_return_pct": 15.41366912182449,
         "worst_return_pct": -17.8536007787897,
-        "mean_abs_return_pct": 8.759457471687297,
+        "mean_abs_return_pct": 7.566283926489771,
         "ci95_positive_rate": null
       },
       "20": {
@@ -94,7 +94,14 @@
         "ci95_positive_rate": null
       },
       "10": {
-        "n": 0
+        "n": 3,
+        "positive_rate": 1.0,
+        "mean_return_pct": 4.38448780596304,
+        "median_return_pct": 2.072606739865268,
+        "best_return_pct": 9.05881258226553,
+        "worst_return_pct": 2.022044095758324,
+        "mean_abs_return_pct": 4.38448780596304,
+        "ci95_positive_rate": null
       },
       "20": {
         "n": 0
@@ -133,13 +140,13 @@
           "ci95_positive_rate": null
         },
         "10": {
-          "n": 7,
-          "positive_rate": 0.5714285714285714,
-          "mean_return_pct": 2.5664281439213963,
-          "median_return_pct": 3.747989264764584,
+          "n": 10,
+          "positive_rate": 0.7,
+          "mean_return_pct": 3.11184604253389,
+          "median_return_pct": 2.910298002314926,
           "best_return_pct": 15.41366912182449,
           "worst_return_pct": -17.8536007787897,
-          "mean_abs_return_pct": 8.393224735431005,
+          "mean_abs_return_pct": 7.190603656590615,
           "ci95_positive_rate": null
         },
         "20": {
@@ -341,5 +348,5 @@
     }
   },
   "outcomes_filled_this_run": 3,
-  "generated_at": "2026-10-28T18:50:26.416818+00:00"
+  "generated_at": "2026-10-29T19:00:32.573267+00:00"
 }
