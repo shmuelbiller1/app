@@ -5,10 +5,10 @@
     "A": 17
   },
   "daily_observations": 17,
-  "matured_outcome_rows": 70,
-  "pending_outcomes": 15,
+  "matured_outcome_rows": 73,
+  "pending_outcomes": 12,
   "horizons": {},
-  "cutoff": "2026-10-15T04:12:00+00:00",
+  "cutoff": "2026-10-14T21:00:00+00:00",
   "A": {
     "all": {
       "1": {
@@ -52,55 +52,55 @@
         "ci95_positive_rate": null
       },
       "20": {
-        "n": 5,
-        "positive_rate": 0.4,
-        "mean_return_pct": 0.8813530451631181,
-        "median_return_pct": -2.8367396503941045,
+        "n": 8,
+        "positive_rate": 0.25,
+        "mean_return_pct": -4.633154957837924,
+        "median_return_pct": -6.726892867976392,
         "best_return_pct": 12.031514118221299,
-        "worst_return_pct": -9.66098664118078,
-        "mean_abs_return_pct": 7.397563199701874,
+        "worst_return_pct": -15.673936756286523,
+        "mean_abs_return_pct": 9.807477610878545,
         "ci95_positive_rate": null
       }
     },
     "out_of_sample": {
       "1": {
-        "n": 6,
-        "positive_rate": 0.3333333333333333,
-        "mean_return_pct": -0.960146834517515,
-        "median_return_pct": -0.40290834644157725,
-        "best_return_pct": 3.7085203668399513,
+        "n": 9,
+        "positive_rate": 0.5555555555555556,
+        "mean_return_pct": 0.008423173281462581,
+        "median_return_pct": 0.5883792603115667,
+        "best_return_pct": 4.411541728758861,
         "worst_return_pct": -8.180257305702987,
-        "mean_abs_return_pct": 2.5004982144231764,
+        "mean_abs_return_pct": 2.3155198725752566,
         "ci95_positive_rate": null
       },
       "3": {
-        "n": 6,
-        "positive_rate": 0.5,
-        "mean_return_pct": -1.343989292719261,
-        "median_return_pct": 0.06190445770125619,
-        "best_return_pct": 2.74467085356096,
+        "n": 9,
+        "positive_rate": 0.6666666666666666,
+        "mean_return_pct": -0.4021435826088604,
+        "median_return_pct": 0.27033907009323954,
+        "best_return_pct": 4.0002783770941575,
         "worst_return_pct": -9.132722489106316,
-        "mean_abs_return_pct": 3.490426249159976,
+        "mean_abs_return_pct": 2.820800111977298,
         "ci95_positive_rate": null
       },
       "5": {
-        "n": 5,
-        "positive_rate": 0.8,
-        "mean_return_pct": -0.9315666950098198,
-        "median_return_pct": 3.521351553576002,
+        "n": 8,
+        "positive_rate": 0.625,
+        "mean_return_pct": -0.08125469582106448,
+        "median_return_pct": 2.497812655898879,
         "best_return_pct": 6.554980703042412,
         "worst_return_pct": -21.448180685942596,
-        "mean_abs_return_pct": 7.6477055793672175,
+        "mean_abs_return_pct": 5.755974949150049,
         "ci95_positive_rate": null
       },
       "10": {
-        "n": 4,
-        "positive_rate": 0.25,
-        "mean_return_pct": -0.24276687459457702,
-        "median_return_pct": -3.220186057172325,
+        "n": 7,
+        "positive_rate": 0.5714285714285714,
+        "mean_return_pct": 1.7403422742158305,
+        "median_return_pct": 2.022044095758324,
         "best_return_pct": 10.621343747935065,
         "worst_return_pct": -5.152039131968722,
-        "mean_abs_return_pct": 5.553438748562109,
+        "mean_abs_return_pct": 5.052459773162508,
         "ci95_positive_rate": null
       },
       "20": {
@@ -150,13 +150,13 @@
           "ci95_positive_rate": null
         },
         "20": {
-          "n": 5,
-          "positive_rate": 0.4,
-          "mean_return_pct": 0.8813530451631181,
-          "median_return_pct": -2.8367396503941045,
+          "n": 7,
+          "positive_rate": 0.2857142857142857,
+          "mean_return_pct": -3.055900415202411,
+          "median_return_pct": -3.7927990947720036,
           "best_return_pct": 12.031514118221299,
-          "worst_return_pct": -9.66098664118078,
-          "mean_abs_return_pct": 7.397563199701874,
+          "worst_return_pct": -13.040199471478486,
+          "mean_abs_return_pct": 8.969412018677405,
           "ci95_positive_rate": null
         }
       },
@@ -202,7 +202,14 @@
           "ci95_positive_rate": null
         },
         "20": {
-          "n": 0
+          "n": 1,
+          "positive_rate": 0.0,
+          "mean_return_pct": -15.673936756286523,
+          "median_return_pct": -15.673936756286523,
+          "best_return_pct": -15.673936756286523,
+          "worst_return_pct": -15.673936756286523,
+          "mean_abs_return_pct": 15.673936756286523,
+          "ci95_positive_rate": null
         }
       },
       "80_90": {
@@ -347,6 +354,6 @@
       }
     }
   },
-  "outcomes_filled_this_run": 2,
-  "generated_at": "2026-11-10T20:27:59.714133+00:00"
+  "outcomes_filled_this_run": 3,
+  "generated_at": "2026-11-11T20:10:43.887175+00:00"
 }
